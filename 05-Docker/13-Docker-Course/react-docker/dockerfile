@@ -1,0 +1,32 @@
+# Set the base image
+FROM node:20-alpine
+
+# Create a non-root user and group
+RUN addgroup app && adduser -S -G app app
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json for dependency installation
+COPY --chown=app:app package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application files
+COPY --chown=app:app . .
+
+# Ensure necessary directories are writable
+RUN mkdir -p /app/node_modules && chown -R app:app /app
+
+# Set environment variables for file watching
+ENV CHOKIDAR_USEPOLLING=true
+
+# Expose port 5173
+EXPOSE 5173
+
+# Set the non-root user
+USER app
+
+# Run the development server
+CMD ["npm", "run", "dev"]
